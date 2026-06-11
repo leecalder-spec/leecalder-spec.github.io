@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#E3350D">
+<title>My Pokédex</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap');
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;}
+body{font-family:'Fredoka',system-ui,-apple-system,sans-serif;background:#E3350D;background:linear-gradient(160deg,#E3350D,#B81E00);min-height:100vh;padding:18px 14px 40px;color:#23262B;}
+.wrap{max-width:480px;margin:0 auto;}
+.title{text-align:center;color:#fff;font-size:34px;font-weight:700;letter-spacing:.02em;margin-bottom:12px;text-shadow:2px 2px 0 rgba(0,0,0,.18);}
+.title .ball{display:inline-block;width:24px;height:24px;border-radius:50%;background:#fff;border:4px solid #2b2b2b;position:relative;vertical-align:-3px;margin-right:6px;}
+.title .ball::after{content:"";position:absolute;left:-4px;right:-4px;top:7px;height:4px;background:#2b2b2b;}
+.tabbar{display:flex;gap:8px;margin-bottom:14px;}
+.tabbtn{flex:1;border:0;border-radius:14px;padding:12px;font-family:inherit;font-size:16px;font-weight:600;cursor:pointer;background:rgba(255,255,255,.22);color:#fff;transition:all .15s;}
+.tabbtn.active{background:#fff;color:#E3350D;box-shadow:0 3px 0 rgba(0,0,0,.15);}
+.controls{display:flex;gap:8px;margin-bottom:10px;}
+.controls input{flex:1;border:0;border-radius:14px;padding:14px 16px;font-family:inherit;font-size:17px;outline:none;box-shadow:inset 0 0 0 3px rgba(0,0,0,.08);}
+.btn{border:0;border-radius:14px;font-family:inherit;font-weight:600;font-size:16px;cursor:pointer;padding:14px 18px;color:#fff;box-shadow:0 3px 0 rgba(0,0,0,.2);transition:transform .05s;}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.2);}
+.btn.search{background:#3B6BD6;}
+.btn.random{width:100%;background:#F2B807;color:#3a2c00;font-size:18px;margin-bottom:14px;}
+.card{background:#fff;border-radius:22px;padding:18px;box-shadow:0 8px 0 rgba(0,0,0,.15);min-height:300px;display:flex;flex-direction:column;}
+.imgwrap{border-radius:18px;padding:10px;display:flex;align-items:center;justify-content:center;min-height:210px;position:relative;transition:background .25s;}
+.imgwrap img{width:210px;height:210px;object-fit:contain;filter:drop-shadow(0 6px 6px rgba(0,0,0,.18));transition:filter .25s;}
+.imgwrap img.sil{filter:brightness(0) drop-shadow(0 6px 6px rgba(0,0,0,.18));}
+.numname{display:flex;align-items:baseline;justify-content:center;gap:8px;margin-top:6px;}
+.num{font-size:15px;color:#9aa0a6;font-weight:600;}
+.name{font-size:30px;font-weight:700;text-transform:capitalize;}
+.types{display:flex;gap:8px;justify-content:center;margin:10px 0 6px;}
+.type{color:#fff;font-weight:600;font-size:14px;padding:5px 16px;border-radius:20px;text-transform:capitalize;box-shadow:0 2px 0 rgba(0,0,0,.15);}
+.physical{display:flex;justify-content:center;gap:24px;color:#5f6368;font-size:14px;margin:4px 0 10px;}
+.physical b{color:#23262B;}
+.stats{margin-top:4px;}
+.statrow{display:flex;align-items:center;gap:10px;margin-bottom:7px;}
+.statlbl{width:64px;font-size:13px;color:#5f6368;font-weight:600;text-align:right;}
+.statbarbg{flex:1;background:#eef0f2;border-radius:8px;height:14px;overflow:hidden;}
+.statbar{height:100%;border-radius:8px;transition:width .4s;}
+.statval{width:34px;font-size:13px;font-weight:600;text-align:left;}
+.nav{display:flex;gap:8px;margin-top:14px;}
+.nav .btn{flex:1;background:#5a6470;}
+.msg{text-align:center;color:#5f6368;font-size:17px;padding:60px 10px;}
+.softnote{text-align:center;color:#9aa0a6;font-size:12.5px;margin-top:10px;}
+.spinner{width:44px;height:44px;border:5px solid #eee;border-top-color:#E3350D;border-radius:50%;animation:spin .8s linear infinite;margin:70px auto;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.score{display:flex;justify-content:center;gap:18px;font-size:15px;color:#fff;margin-bottom:10px;font-weight:600;}
+.score b{color:#F2B807;}
+.gq{text-align:center;font-size:20px;font-weight:600;margin:4px 0 4px;}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
+.opt{border:0;border-radius:14px;padding:16px 8px;font-family:inherit;font-weight:600;font-size:17px;text-transform:capitalize;cursor:pointer;background:#eef0f2;color:#23262B;box-shadow:0 3px 0 rgba(0,0,0,.1);transition:transform .05s;}
+.opt:active{transform:translateY(2px);}
+.opt.correct{background:#4CAF50;color:#fff;}
+.opt.wrong{background:#E0533F;color:#fff;opacity:.85;}
+.reveal{text-align:center;font-size:26px;font-weight:700;text-transform:capitalize;margin-top:12px;color:#4CAF50;}
+.note{text-align:center;color:#ffd9d2;font-size:11px;margin-top:16px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="title"><span class="ball"></span>My Pokédex</div>
+  <div class="tabbar">
+    <button class="tabbtn active" id="tabDex">🔍 Explore</button>
+    <button class="tabbtn" id="tabGame">❓ Who's That?</button>
+  </div>
+
+  <div id="dexView">
+    <div class="controls">
+      <input id="q" type="text" inputmode="search" placeholder="e.g. pikachu or 25" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <button class="btn search" id="searchBtn">Go</button>
+    </div>
+    <button class="btn random" id="randomBtn">🎲 Surprise Me!</button>
+    <div class="card" id="card"></div>
+  </div>
+
+  <div id="gameView" style="display:none">
+    <div class="score">Streak <b id="streak">0</b> · Best <b id="best">0</b></div>
+    <div class="card" id="gameCard"></div>
+  </div>
+
+  <div class="note">Pictures &amp; data from the free PokéAPI · needs internet · v4</div>
+</div>
+
+<script>
+"use strict";
+var MAX_ID = 1025;
+// The API's canonical URLs have NO trailing slash; redirects can break
+// browser CORS checks, so we try the direct form first, then the slashed
+// form as a backup in case the API ever flips its canonicalisation again.
+function apiUrl(idOrName) { return "https://pokeapi.co/api/v2/pokemon/" + String(idOrName).toLowerCase().trim(); }
+function artUrl(id) { return "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/" + id + ".png"; }
+
+var TYPE_COLORS = { normal:"#A8A77A", fire:"#EE8130", water:"#6390F0", electric:"#F7D02C", grass:"#7AC74C", ice:"#96D9D6", fighting:"#C22E28", poison:"#A33EA1", ground:"#E2BF65", flying:"#A98FF3", psychic:"#F95587", bug:"#A6B91A", rock:"#B6A136", ghost:"#735797", dragon:"#6F35FC", dark:"#705746", steel:"#B7B7CE", fairy:"#D685AD" };
+var STAT_LABELS = { "hp":"HP", "attack":"Attack", "defense":"Defense", "special-attack":"Sp. Atk", "special-defense":"Sp. Def", "speed":"Speed" };
+
+// Original 151 baked in - the game runs on these with zero API calls,
+// and Explore can fall back to them if the API is unreachable.
+var GEN1 = ["bulbasaur","ivysaur","venusaur","charmander","charmeleon","charizard","squirtle","wartortle","blastoise","caterpie","metapod","butterfree","weedle","kakuna","beedrill","pidgey","pidgeotto","pidgeot","rattata","raticate","spearow","fearow","ekans","arbok","pikachu","raichu","sandshrew","sandslash","nidoran-f","nidorina","nidoqueen","nidoran-m","nidorino","nidoking","clefairy","clefable","vulpix","ninetales","jigglypuff","wigglytuff","zubat","golbat","oddish","gloom","vileplume","paras","parasect","venonat","venomoth","diglett","dugtrio","meowth","persian","psyduck","golduck","mankey","primeape","growlithe","arcanine","poliwag","poliwhirl","poliwrath","abra","kadabra","alakazam","machop","machoke","machamp","bellsprout","weepinbell","victreebel","tentacool","tentacruel","geodude","graveler","golem","ponyta","rapidash","slowpoke","slowbro","magnemite","magneton","farfetchd","doduo","dodrio","seel","dewgong","grimer","muk","shellder","cloyster","gastly","haunter","gengar","onix","drowzee","hypno","krabby","kingler","voltorb","electrode","exeggcute","exeggutor","cubone","marowak","hitmonlee","hitmonchan","lickitung","koffing","weezing","rhyhorn","rhydon","chansey","tangela","kangaskhan","horsea","seadra","goldeen","seaking","staryu","starmie","mr-mime","scyther","jynx","electabuzz","magmar","pinsir","tauros","magikarp","gyarados","lapras","ditto","eevee","vaporeon","jolteon","flareon","porygon","omanyte","omastar","kabuto","kabutops","aerodactyl","snorlax","articuno","zapdos","moltres","dratini","dragonair","dragonite","mewtwo","mew"];
+
+var GEN1TYPES = ["grass,poison","grass,poison","grass,poison","fire","fire","fire,flying","water","water","water","bug","bug","bug,flying","bug,poison","bug,poison","bug,poison","normal,flying","normal,flying","normal,flying","normal","normal","normal,flying","normal,flying","poison","poison","electric","electric","ground","ground","poison","poison","poison,ground","poison","poison","poison,ground","fairy","fairy","fire","fire","normal,fairy","normal,fairy","poison,flying","poison,flying","grass,poison","grass,poison","grass,poison","bug,grass","bug,grass","bug,poison","bug,poison","ground","ground","normal","normal","water","water","fighting","fighting","fire","fire","water","water","water,fighting","psychic","psychic","psychic","fighting","fighting","fighting","grass,poison","grass,poison","grass,poison","water,poison","water,poison","rock,ground","rock,ground","rock,ground","fire","fire","water,psychic","water,psychic","electric,steel","electric,steel","normal,flying","normal,flying","normal,flying","water","water,ice","poison","poison","water","water,ice","ghost,poison","ghost,poison","ghost,poison","rock,ground","psychic","psychic","water","water","electric","electric","grass,psychic","grass,psychic","ground","ground","fighting","fighting","normal","poison","poison","ground,rock","ground,rock","normal","grass","normal","water","water","water","water","water","water,psychic","psychic,fairy","bug,flying","ice,psychic","electric","fire","bug","normal","water","water,flying","water,ice","normal","normal","water","electric","fire","normal","rock,water","rock,water","rock,water","rock,water","rock,flying","normal","ice,flying","electric,flying","fire,flying","dragon","dragon","dragon,flying","psychic","psychic"];
+
+function pad(n) { return "#" + String(n).padStart(3, "0"); }
+function pretty(n) { return n.replace("nidoran-f","nidoran ♀").replace("nidoran-m","nidoran ♂").replace("mr-mime","mr. mime").replace(/-/g," "); }
+function hexA(hex, a) { var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16); return "rgba(" + r + "," + g + "," + b + "," + a + ")"; }
+function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+
+/* ---------- EXPLORE ---------- */
+var card = document.getElementById("card");
+var currentId = 25;
+
+var attempts = [];
+function tryJson(u) {
+  return fetch(u).then(function (r) {
+    if (!r.ok) { attempts.push(u.split("/")[2] + " → HTTP " + r.status); throw new Error("httpbad"); }
+    return r.json();
+  }).catch(function (e) {
+    if (e.message !== "httpbad") attempts.push(u.split("/")[2] + " → " + (e.message || "failed"));
+    throw e;
+  });
+}
+// Some content filters block fetch() but miss the older XMLHttpRequest,
+// so every request gets two chances: fetch first, then XHR.
+function xhrJson(u) {
+  return new Promise(function (resolve, reject) {
+    try {
+      var x = new XMLHttpRequest();
+      x.open("GET", u, true);
+      x.timeout = 15000;
+      x.onload = function () {
+        if (x.status >= 200 && x.status < 300) {
+          try { resolve(JSON.parse(x.responseText)); }
+          catch (e) { attempts.push("xhr " + u.split("/")[2] + " → bad data"); reject(e); }
+        } else { attempts.push("xhr " + u.split("/")[2] + " → HTTP " + x.status); reject(new Error("http")); }
+      };
+      x.onerror = function () { attempts.push("xhr " + u.split("/")[2] + " → blocked"); reject(new Error("err")); };
+      x.ontimeout = function () { attempts.push("xhr " + u.split("/")[2] + " → timeout"); reject(new Error("timeout")); };
+      x.send();
+    } catch (e) { attempts.push("xhr " + u.split("/")[2] + " → " + e.message); reject(e); }
+  });
+}
+function getJson(u) { return tryJson(u).catch(function () { return xhrJson(u); }); }
+function ghDataUrl(id) { return "https://raw.githubusercontent.com/PokeAPI/api-data/master/data/api/v2/pokemon/" + id + "/index.json"; }
+var nameIndex = null; // lazy-loaded master list for name lookups beyond Gen 1
+function resolveId(query) {
+  var qs = String(query).toLowerCase().trim();
+  var n = parseInt(qs, 10);
+  if (n >= 1 && n <= MAX_ID && String(n) === qs) return Promise.resolve(n);
+  var ix = GEN1.indexOf(qs);
+  if (ix >= 0) return Promise.resolve(ix + 1);
+  var lookup = function (list) {
+    for (var i = 0; i < list.results.length; i++) {
+      if (list.results[i].name === qs) {
+        var m = list.results[i].url.match(/\/(\d+)\/?$/);
+        if (m) return parseInt(m[1], 10);
+      }
+    }
+    throw new Error("unknown");
+  };
+  if (nameIndex) return Promise.resolve(lookup(nameIndex));
+  return getJson("https://raw.githubusercontent.com/PokeAPI/api-data/master/data/api/v2/pokemon/index.json")
+    .then(function (list) { nameIndex = list; return lookup(list); });
+}
+function dexLoad(query) {
+  attempts = [];
+  card.innerHTML = '<div class="spinner"></div>';
+  var base = apiUrl(query);
+  getJson(base)
+    .catch(function () { return getJson(base + "/"); })
+    .catch(function () { return resolveId(query).then(function (id) { return getJson(ghDataUrl(id)); }); })
+    .then(renderPoke)
+    .catch(function () { fallback(query); });
+}
+
+// If the API can't be reached but the query is one of the original 151,
+// still show the Pokemon (image + name) rather than a dead end.
+function fallback(query) {
+  var qs = String(query).toLowerCase().trim();
+  var id = 0;
+  var asNum = parseInt(qs, 10);
+  if (asNum >= 1 && asNum <= 151) id = asNum;
+  else { var ix = GEN1.indexOf(qs); if (ix >= 0) id = ix + 1; }
+  if (!id) {
+    card.innerHTML = '<div class="msg">😅 Couldn\'t fetch that one!<br>Check spelling (e.g. <b>bulbasaur</b>) or a number 1–' + MAX_ID + ' — and make sure you\'re online.</div>';
+    return;
+  }
+  currentId = id;
+  var tps = (GEN1TYPES[id - 1] || "").split(",").filter(Boolean);
+  var typeHtml = tps.map(function (t) { var c = TYPE_COLORS[t] || "#777"; return '<span class="type" style="background:' + c + '">' + t + '</span>'; }).join("");
+  var pColor = TYPE_COLORS[tps[0]] || "#6390F0";
+  card.innerHTML =
+    '<div class="imgwrap" style="background:radial-gradient(circle at 50% 45%,' + hexA(pColor,.24) + ',' + hexA(pColor,.05) + ')"><img src="' + artUrl(id) + '" alt=""></div>' +
+    '<div class="numname"><span class="num">' + pad(id) + '</span><span class="name">' + pretty(GEN1[id - 1]) + '</span></div>' +
+    (typeHtml ? '<div class="types">' + typeHtml + '</div>' : '') +
+    '<div class="softnote" id="diagNote" style="cursor:pointer">Quick view — full stats couldn\'t be fetched. <u>Tap for details</u></div>' +
+    '<div class="softnote" id="diagBox" style="display:none;text-align:left;background:#f6f7f8;border-radius:10px;padding:10px 12px;font-size:11.5px;word-break:break-all"></div>' +
+    '<div class="nav"><button class="btn" id="prevBtn">◀ Prev</button><button class="btn" id="nextBtn">Next ▶</button></div>';
+  wireNav();
+  var dn = document.getElementById("diagNote"), db = document.getElementById("diagBox");
+  if (dn && db) dn.onclick = function () {
+    db.innerHTML = attempts.length ? attempts.map(function (a) { return "• " + a; }).join("<br>") : "• no attempts recorded";
+    db.style.display = db.style.display === "none" ? "block" : "none";
+  };
+}
+
+function wireNav() {
+  var p = document.getElementById("prevBtn"), n = document.getElementById("nextBtn");
+  if (p) p.onclick = function () { dexLoad(currentId > 1 ? currentId - 1 : MAX_ID); };
+  if (n) n.onclick = function () { dexLoad(currentId < MAX_ID ? currentId + 1 : 1); };
+}
+
+function renderPoke(d) {
+  currentId = d.id;
+  var art = (d.sprites.other && d.sprites.other["official-artwork"] && d.sprites.other["official-artwork"].front_default) || d.sprites.front_default || artUrl(d.id);
+  var primary = (d.types[0] && d.types[0].type.name) || "normal";
+  var pColor = TYPE_COLORS[primary] || "#A8A77A";
+  var typeHtml = d.types.map(function (t) { var c = TYPE_COLORS[t.type.name] || "#777"; return '<span class="type" style="background:' + c + '">' + t.type.name + '</span>'; }).join("");
+  var statHtml = d.stats.map(function (s) {
+    var pct = Math.min(100, (s.base_stat / 180) * 100);
+    return '<div class="statrow"><div class="statlbl">' + (STAT_LABELS[s.stat.name] || s.stat.name) + '</div><div class="statbarbg"><div class="statbar" style="width:' + pct + '%;background:' + pColor + '"></div></div><div class="statval">' + s.base_stat + '</div></div>';
+  }).join("");
+  card.innerHTML =
+    '<div class="imgwrap" style="background:radial-gradient(circle at 50% 45%,' + hexA(pColor,.28) + ',' + hexA(pColor,.06) + ')"><img src="' + art + '" alt="' + d.name + '"></div>' +
+    '<div class="numname"><span class="num">' + pad(d.id) + '</span><span class="name">' + pretty(d.name) + '</span></div>' +
+    '<div class="types">' + typeHtml + '</div>' +
+    '<div class="physical"><span>Height <b>' + (d.height/10) + ' m</b></span><span>Weight <b>' + (d.weight/10) + ' kg</b></span></div>' +
+    '<div class="stats">' + statHtml + '</div>' +
+    '<div class="nav"><button class="btn" id="prevBtn">◀ Prev</button><button class="btn" id="nextBtn">Next ▶</button></div>';
+  wireNav();
+}
+
+document.getElementById("searchBtn").onclick = function () { var v = document.getElementById("q").value; if (v.trim()) dexLoad(v); };
+document.getElementById("q").addEventListener("keydown", function (e) { if (e.key === "Enter" && e.target.value.trim()) dexLoad(e.target.value); });
+document.getElementById("randomBtn").onclick = function () { dexLoad(Math.floor(Math.random() * MAX_ID) + 1); };
+
+/* ---------- WHO'S THAT? (no API calls at all - original 151 baked in) ---------- */
+var gameCard = document.getElementById("gameCard");
+var gId = 0, gRevealed = false, gOptions = [], gWrong = {}, gWrongCount = 0;
+var streak = 0, best = 0;
+try { best = parseInt(localStorage.getItem("pokedex-best-streak")) || 0; } catch (e) {}
+function setScore() { document.getElementById("streak").textContent = streak; document.getElementById("best").textContent = best; }
+
+function newRound() {
+  gRevealed = false; gWrong = {}; gWrongCount = 0;
+  gId = Math.floor(Math.random() * 151) + 1;
+  var answer = GEN1[gId - 1];
+  var opts = [answer], guard = 0;
+  while (opts.length < 4 && guard < 999) {
+    guard++;
+    var n = GEN1[Math.floor(Math.random() * 151)];
+    if (opts.indexOf(n) < 0) opts.push(n);
+  }
+  gOptions = shuffle(opts);
+  renderGame();
+}
+function guess(name) {
+  if (gRevealed) return;
+  if (name === GEN1[gId - 1]) {
+    gRevealed = true;
+    if (gWrongCount === 0) { streak++; if (streak > best) { best = streak; try { localStorage.setItem("pokedex-best-streak", best); } catch (e) {} } }
+    else { streak = 0; }
+    setScore(); renderGame();
+  } else {
+    gWrong[name] = true; gWrongCount++; renderGame();
+  }
+}
+function renderGame() {
+  var answer = GEN1[gId - 1];
+  var optHtml = gOptions.map(function (n) {
+    var cls = "opt";
+    if (gRevealed && n === answer) cls += " correct";
+    else if (gWrong[n]) cls += " wrong";
+    return '<button class="' + cls + '" data-name="' + n + '"' + (gWrong[n] ? " disabled" : "") + '>' + pretty(n) + '</button>';
+  }).join("");
+  gameCard.innerHTML =
+    '<div class="gq">' + (gRevealed ? "It's..." : "Who's that Pokémon?") + '</div>' +
+    '<div class="imgwrap"><img class="' + (gRevealed ? "" : "sil") + '" src="' + artUrl(gId) + '" alt="?"></div>' +
+    (gRevealed
+      ? '<div class="reveal">' + pretty(answer) + '!</div><div class="nav"><button class="btn random" id="nextRound" style="margin-bottom:0">Next Pokémon ▶</button></div>'
+      : '<div class="opts">' + optHtml + '</div>');
+  if (gRevealed) {
+    document.getElementById("nextRound").onclick = newRound;
+  } else {
+    gameCard.querySelectorAll(".opt").forEach(function (b) { if (!b.disabled) b.onclick = function () { guess(b.dataset.name); }; });
+  }
+}
+
+/* ---------- TABS ---------- */
+function showView(v) {
+  document.getElementById("dexView").style.display = v === "dex" ? "block" : "none";
+  document.getElementById("gameView").style.display = v === "game" ? "block" : "none";
+  document.getElementById("tabDex").classList.toggle("active", v === "dex");
+  document.getElementById("tabGame").classList.toggle("active", v === "game");
+  if (v === "game" && !gId) { setScore(); newRound(); }
+}
+document.getElementById("tabDex").onclick = function () { showView("dex"); };
+document.getElementById("tabGame").onclick = function () { showView("game"); };
+
+dexLoad(currentId); // start on Pikachu
+</script>
+</body>
+</html>
