@@ -100,7 +100,7 @@ td.pts{font-weight:700;color:var(--white);}
   </div>
   <div class="statusline"><span id="updated">loading…</span><button id="refreshBtn">↻ Refresh</button></div>
   <div id="content"><div class="spinner"></div></div>
-  <div class="foot">tap any match for details &amp; lineups · times in your device's timezone · data: ESPN public feed · v4</div>
+  <div class="foot">tap any match for details &amp; lineups · times in your device's timezone · data: ESPN public feed · v6</div>
 </div>
 
 <script>
@@ -264,6 +264,41 @@ function statVal(entry,name){
   var s=(entry.stats||[]).find(function(x){return x.name===name;});
   return s? (s.displayValue!==undefined?s.displayValue:s.value) : "–";
 }
+function statNum(entry,name){
+  var s=(entry.stats||[]).find(function(x){return x.name===name;});
+  return s && typeof s.value==="number" ? s.value : parseFloat(s&&s.displayValue)||0;
+}
+function teamKey(t){ return t ? (t.id || t.displayName || "") : ""; }
+// head-to-head points between two teams from completed matches in the feed
+function h2hPoints(tA, tB){
+  var pA=0, pB=0;
+  events.forEach(function(ev){
+    if(state(ev)!=="post") return;
+    var c=comp(ev); if(!c) return;
+    var comps=c.competitors||[];
+    var a=comps.find(function(x){ return teamKey(x.team)===teamKey(tA); });
+    var b=comps.find(function(x){ return teamKey(x.team)===teamKey(tB); });
+    if(!a || !b) return;
+    var sa=parseInt(a.score,10), sb=parseInt(b.score,10);
+    if(isNaN(sa)||isNaN(sb)) return;
+    if(sa>sb) pA+=3; else if(sb>sa) pB+=3; else { pA+=1; pB+=1; }
+  });
+  return pA-pB;
+}
+function sortEntries(entries){
+  return entries.slice().sort(function(a,b){
+    var d = statNum(b,"points") - statNum(a,"points");
+    if(d) return d;
+    d = statNum(b,"pointDifferential") - statNum(a,"pointDifferential");
+    if(d) return d;
+    d = statNum(b,"pointsFor") - statNum(a,"pointsFor"); // goals scored (FIFA tiebreak 3)
+    if(d) return d;
+    d = h2hPoints(b.team, a.team);
+    if(d) return d;
+    var an=(a.team&&a.team.displayName)||"", bn=(b.team&&b.team.displayName)||"";
+    return an.localeCompare(bn);
+  });
+}
 function renderGroups(){
   if(!groups){
     $("content").innerHTML='<div class="spinner"></div>';
@@ -274,7 +309,7 @@ function renderGroups(){
   }
   var html="";
   groups.forEach(function(g){
-    var entries=(g.standings&&g.standings.entries)||[];
+    var entries=sortEntries((g.standings&&g.standings.entries)||[]);
     if(!entries.length) return;
     html+='<div class="card"><div class="grouphdr">'+esc(g.name||"")+'</div><table><tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr>';
     entries.forEach(function(en){
