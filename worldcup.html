@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#001433">
+<title>WC26 · Scotland Tracker</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Archivo+Narrow:wght@600;700&family=Space+Mono:wght@400;700&display=swap');
+:root{--bg:#001433;--bg2:#00204d;--card:#0a2a5c;--card2:#0e3470;--line:#1d4585;--white:#F4F7FC;--muted:#8fa6c9;--saltire:#3D7DE0;--gold:#F2C14E;--live:#FF4D5E;--win:#39C97D;}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;}
+body{font-family:'Archivo',system-ui,sans-serif;background:linear-gradient(170deg,var(--bg),#001029 60%);color:var(--white);min-height:100vh;padding:20px 14px 46px;line-height:1.45;}
+.wrap{max-width:520px;margin:0 auto;}
+.head{text-align:center;margin-bottom:14px;}
+.head h1{font-family:'Archivo Narrow',sans-serif;font-weight:700;font-size:34px;letter-spacing:.03em;}
+.head h1 .x{color:var(--saltire);}
+.head .sub{font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.08em;}
+.tabs{display:flex;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px;margin:14px 0;}
+.tab{flex:1;border:0;background:transparent;color:var(--muted);font-family:inherit;font-weight:700;font-size:13.5px;letter-spacing:.03em;padding:11px 4px;border-radius:9px;cursor:pointer;transition:all .15s;}
+.tab.active{background:var(--saltire);color:#fff;}
+.statusline{display:flex;justify-content:space-between;align-items:center;font-family:'Space Mono',monospace;font-size:10.5px;color:var(--muted);margin-bottom:10px;}
+.statusline button{border:0;background:var(--bg2);color:var(--muted);border:1px solid var(--line);font-family:inherit;font-size:10.5px;border-radius:6px;padding:4px 10px;cursor:pointer;}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;}
+.datehdr{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:16px 2px 8px;}
+.match{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 12px;margin-bottom:8px;}
+.match.live{border-color:var(--live);}
+.match.mine{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold);}
+.team{flex:1;display:flex;align-items:center;gap:7px;min-width:0;}
+.team.right{flex-direction:row-reverse;text-align:right;}
+.team img{width:24px;height:24px;object-fit:contain;flex-shrink:0;}
+.team .tn{font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.team.sco .tn{color:var(--saltire);font-weight:800;}
+.mid{text-align:center;min-width:74px;flex-shrink:0;}
+.mid .score{font-family:'Space Mono',monospace;font-weight:700;font-size:18px;}
+.mid .when{font-size:11.5px;color:var(--muted);font-weight:600;}
+.mid .st{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.05em;color:var(--muted);margin-top:2px;}
+.mid .st.live{color:var(--live);animation:pulse 1.4s infinite;}
+.mid .st.ft{color:var(--win);}
+@keyframes pulse{50%{opacity:.45;}}
+.minebadge{font-family:'Space Mono',monospace;font-size:10px;background:var(--gold);color:#3a2c00;font-weight:700;border-radius:6px;padding:3px 8px;text-align:center;margin:-2px 0 6px;display:inline-block;}
+.venue{font-size:10.5px;color:var(--muted);text-align:center;margin-top:4px;}
+.count{display:flex;justify-content:center;gap:10px;margin:10px 0 4px;}
+.count .cu{text-align:center;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:8px 0;width:64px;}
+.count .cv{font-family:'Space Mono',monospace;font-weight:700;font-size:22px;}
+.count .cl{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+.bighdr{font-family:'Archivo Narrow',sans-serif;font-weight:700;font-size:19px;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.bighdr img{width:26px;height:26px;}
+table{width:100%;border-collapse:collapse;font-size:12.5px;}
+th{font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.08em;color:var(--muted);text-align:center;padding:5px 2px;font-weight:400;}
+th:first-child{text-align:left;}
+td{padding:7px 2px;text-align:center;border-top:1px solid var(--line);font-family:'Space Mono',monospace;font-size:12px;}
+td.t{text-align:left;font-family:'Archivo',sans-serif;font-weight:600;font-size:12.5px;display:flex;align-items:center;gap:6px;}
+td.t img{width:18px;height:18px;}
+tr.sco td{color:var(--saltire);font-weight:700;}
+td.pts{font-weight:700;color:var(--white);}
+.grouphdr{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;}
+.chiprow{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
+.chip{border:1px solid var(--line);background:var(--bg2);color:var(--muted);font-family:inherit;font-weight:600;font-size:12px;border-radius:18px;padding:6px 13px;cursor:pointer;}
+.chip.active{background:var(--white);color:var(--bg);border-color:var(--white);}
+.msg{text-align:center;color:var(--muted);padding:36px 12px;font-size:14px;}
+.msg u{cursor:pointer;}
+.diag{font-family:'Space Mono',monospace;font-size:10.5px;color:var(--muted);background:var(--bg2);border-radius:8px;padding:8px 10px;margin-top:8px;text-align:left;word-break:break-all;display:none;}
+.spinner{width:36px;height:36px;border:4px solid var(--line);border-top-color:var(--saltire);border-radius:50%;animation:spin .8s linear infinite;margin:50px auto;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.foot{text-align:center;font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);margin-top:22px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <h1>🏴󠁧󠁢󠁳󠁣󠁴󠁿 WC<span class="x">26</span> TRACKER</h1>
+    <div class="sub">SCOTLAND &amp; THE WORLD CUP · LIVE</div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" data-v="sco">Scotland</button>
+    <button class="tab" data-v="matches">Matches</button>
+    <button class="tab" data-v="groups">Groups</button>
+  </div>
+  <div class="statusline"><span id="updated">loading…</span><button id="refreshBtn">↻ Refresh</button></div>
+  <div id="content"><div class="spinner"></div></div>
+  <div class="foot">times shown in your device's timezone · data: ESPN public feed · v1</div>
+</div>
+
+<script>
+"use strict";
+var SB = "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?limit=400&dates=20260611-20260719";
+var ST = "https://site.api.espn.com/apis/v2/sports/soccer/fifa.world/standings";
+var view = "sco", filter = "today";
+var events = [], groups = null, lastOk = null, errors = [];
+var countdownTimer = null;
+
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s||"").replace(/</g,"&lt;"); }
+function getJson(u){
+  return fetch(u).then(function(r){ if(!r.ok){ errors.push(u.split("/")[2]+" HTTP "+r.status); throw 0; } return r.json(); })
+    .catch(function(e){ if(e!==0) errors.push(u.split("/")[2]+" → "+((e&&e.message)||"failed")); throw e; });
+}
+
+/* ---------- load ---------- */
+function load(manual){
+  errors = [];
+  if(manual) $("updated").textContent = "updating…";
+  getJson(SB).then(function(d){
+    events = (d.events||[]).slice().sort(function(a,b){ return new Date(a.date)-new Date(b.date); });
+    lastOk = new Date();
+    try{ localStorage.setItem("wc26-cache", JSON.stringify({t:Date.now(), events:events})); }catch(e){}
+    $("updated").textContent = "updated " + lastOk.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
+    render();
+  }).catch(function(){
+    try{
+      var c = JSON.parse(localStorage.getItem("wc26-cache"));
+      if(c && c.events){ events = c.events; $("updated").textContent = "offline — showing cached data"; render(); return; }
+    }catch(e){}
+    $("updated").textContent = "couldn't load";
+    $("content").innerHTML = '<div class="msg">Couldn\'t reach the scores feed. <u id="diagT">Details</u> · <u id="retryT">Retry</u><div class="diag" id="diagB"></div></div>';
+    $("retryT").onclick = function(){ $("content").innerHTML='<div class="spinner"></div>'; load(true); };
+    $("diagT").onclick = function(){ var b=$("diagB"); b.innerHTML = errors.map(function(x){return "• "+esc(x);}).join("<br>")||"no detail"; b.style.display = b.style.display==="block"?"none":"block"; };
+  });
+}
+function loadGroups(){
+  return getJson(ST).then(function(d){ groups = d.children || []; });
+}
+
+/* ---------- helpers ---------- */
+function comp(ev){ return ev.competitions && ev.competitions[0]; }
+function state(ev){ var c=comp(ev); return c && c.status && c.status.type ? c.status.type.state : "pre"; }
+function isSco(team){ return team && (team.abbreviation==="SCO" || team.displayName==="Scotland"); }
+function hasSco(ev){ var c=comp(ev); return c && (c.competitors||[]).some(function(x){ return isSco(x.team); }); }
+function isMyMatch(ev){
+  var c=comp(ev); if(!c) return false;
+  var abbrs=(c.competitors||[]).map(function(x){return x.team&&x.team.abbreviation;});
+  return abbrs.indexOf("SCO")>=0 && abbrs.indexOf("MAR")>=0;
+}
+function dayKey(d){ var x=new Date(d); return x.toLocaleDateString([], {weekday:"short", day:"numeric", month:"short"}); }
+function timeStr(d){ return new Date(d).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}); }
+
+function matchRow(ev){
+  var c=comp(ev); if(!c) return "";
+  var comps=c.competitors||[];
+  var home=comps.find(function(x){return x.homeAway==="home";})||comps[0]||{};
+  var away=comps.find(function(x){return x.homeAway==="away";})||comps[1]||{};
+  var st=state(ev), mine=isMyMatch(ev);
+  var stType=(c.status&&c.status.type)||{};
+  var mid;
+  if(st==="pre"){ mid='<div class="when">'+timeStr(ev.date)+'</div><div class="st">'+esc(stType.shortDetail==="Scheduled"?"":stType.shortDetail)+'</div>'; }
+  else if(st==="in"){ mid='<div class="score">'+esc(home.score)+' – '+esc(away.score)+'</div><div class="st live">● '+esc(c.status.displayClock||"LIVE")+'</div>'; }
+  else { mid='<div class="score">'+esc(home.score)+' – '+esc(away.score)+'</div><div class="st ft">FT</div>'; }
+  function side(t, right){
+    var team=t.team||{};
+    return '<div class="team'+(right?' right':'')+(isSco(team)?' sco':'')+'">'+
+      (team.logo?'<img src="'+team.logo+'" alt="">':'')+
+      '<span class="tn">'+esc(team.shortDisplayName||team.displayName||"TBD")+'</span></div>';
+  }
+  var venue=c.venue?'<div class="venue">'+esc(c.venue.fullName)+(c.venue.address&&c.venue.address.city?', '+esc(c.venue.address.city):'')+'</div>':'';
+  return '<div>'+(mine?'<span class="minebadge">🎟️ YOUR MATCH — Gillette, Fri 19 Jun</span>':'')+
+    '<div class="match'+(st==="in"?" live":"")+(mine?" mine":"")+'">'+side(home)+'<div class="mid">'+mid+'</div>'+side(away,true)+'</div>'+
+    (mine||hasSco(ev)?venue:'')+'</div>';
+}
+
+/* ---------- views ---------- */
+function render(){
+  if(view==="sco") renderScotland();
+  else if(view==="matches") renderMatches();
+  else renderGroups();
+}
+
+function renderScotland(){
+  var sco=events.filter(hasSco);
+  var html="";
+  var next=sco.find(function(ev){ return state(ev)!=="post"; });
+  if(next && state(next)==="pre"){
+    html+='<div class="card"><div class="grouphdr">Next up for Scotland</div>'+matchRow(next)+
+      '<div class="count" id="cdown"></div></div>';
+  }
+  if(sco.length){
+    html+='<div class="datehdr">Scotland\'s matches</div>'+sco.map(matchRow).join("");
+  } else {
+    html+='<div class="msg">No Scotland fixtures in the feed yet — pull refresh, or check the Matches tab.</div>';
+  }
+  var done=sco.filter(function(e){return state(e)==="post";});
+  $("content").innerHTML=html;
+  if(countdownTimer) clearInterval(countdownTimer);
+  if(next && state(next)==="pre" && $("cdown")){
+    var target=new Date(next.date).getTime();
+    var tick=function(){
+      var ms=target-Date.now();
+      if(ms<=0){ clearInterval(countdownTimer); load(false); return; }
+      var d=Math.floor(ms/86400000), h=Math.floor(ms%86400000/3600000), m=Math.floor(ms%3600000/60000), s=Math.floor(ms%60000/1000);
+      $("cdown").innerHTML=[[d,"days"],[h,"hrs"],[m,"min"],[s,"sec"]].map(function(u){
+        return '<div class="cu"><div class="cv">'+u[0]+'</div><div class="cl">'+u[1]+'</div></div>';
+      }).join("");
+    };
+    tick(); countdownTimer=setInterval(tick,1000);
+  }
+}
+
+function renderMatches(){
+  var now=new Date(); var todayK=dayKey(now);
+  var live=events.filter(function(e){return state(e)==="in";});
+  var list;
+  if(filter==="today") list=events.filter(function(e){return dayKey(e.date)===todayK;});
+  else if(filter==="upcoming") list=events.filter(function(e){return state(e)==="pre";});
+  else if(filter==="results") list=events.filter(function(e){return state(e)==="post";});
+  else list=events;
+  var html='<div class="chiprow">'+[["today","Today"],["upcoming","Upcoming"],["results","Results"],["all","All"]].map(function(c){
+    return '<button class="chip'+(filter===c[0]?" active":"")+'" data-f="'+c[0]+'">'+c[1]+'</button>';
+  }).join("")+'</div>';
+  if(live.length && filter==="today"){ html+='<div class="datehdr" style="color:var(--live)">● Live now</div>'+live.map(matchRow).join(""); }
+  if(!list.length){ html+='<div class="msg">No matches for this view.</div>'; }
+  else{
+    var byDay={};
+    list.forEach(function(e){ var k=dayKey(e.date); (byDay[k]=byDay[k]||[]).push(e); });
+    Object.keys(byDay).forEach(function(k){
+      html+='<div class="datehdr">'+esc(k)+'</div>'+byDay[k].map(matchRow).join("");
+    });
+  }
+  $("content").innerHTML=html;
+  document.querySelectorAll("[data-f]").forEach(function(b){ b.onclick=function(){ filter=b.dataset.f; renderMatches(); }; });
+}
+
+function statVal(entry,name){
+  var s=(entry.stats||[]).find(function(x){return x.name===name;});
+  return s? (s.displayValue!==undefined?s.displayValue:s.value) : "–";
+}
+function renderGroups(){
+  if(!groups){
+    $("content").innerHTML='<div class="spinner"></div>';
+    loadGroups().then(renderGroups).catch(function(){
+      $("content").innerHTML='<div class="msg">Couldn\'t load the group tables — try refresh.</div>';
+    });
+    return;
+  }
+  var html="";
+  groups.forEach(function(g){
+    var entries=(g.standings&&g.standings.entries)||[];
+    if(!entries.length) return;
+    html+='<div class="card"><div class="grouphdr">'+esc(g.name||"")+'</div><table><tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr>';
+    entries.forEach(function(en){
+      var t=en.team||{};
+      var logo=t.logo||((t.logos&&t.logos[0])?t.logos[0].href:"");
+      html+='<tr'+(isSco(t)?' class="sco"':'')+'><td class="t">'+(logo?'<img src="'+logo+'" alt="">':'')+esc(t.shortDisplayName||t.displayName)+'</td>'+
+        '<td>'+statVal(en,"gamesPlayed")+'</td><td>'+statVal(en,"wins")+'</td><td>'+statVal(en,"ties")+'</td><td>'+statVal(en,"losses")+'</td>'+
+        '<td>'+statVal(en,"pointDifferential")+'</td><td class="pts">'+statVal(en,"points")+'</td></tr>';
+    });
+    html+='</table></div>';
+  });
+  $("content").innerHTML=html||'<div class="msg">Group tables will appear once the feed publishes them.</div>';
+}
+
+/* ---------- tabs, refresh ---------- */
+document.querySelectorAll("[data-v]").forEach(function(b){
+  b.onclick=function(){
+    view=b.dataset.v;
+    document.querySelectorAll("[data-v]").forEach(function(x){ x.classList.toggle("active", x===b); });
+    if(view==="groups") groups=null; // refetch tables when opening
+    render();
+  };
+});
+$("refreshBtn").onclick=function(){ groups=null; load(true); };
+setInterval(function(){ if(document.visibilityState==="visible") load(false); }, 60000);
+load(true);
+</script>
+</body>
+</html>
