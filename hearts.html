@@ -216,7 +216,7 @@ function renderNext(){
     html+='<div class="card"><div class="next-h">'+(state(next)==="in"?"Live now":"Next match")+'</div>'+matchRow(next)+
       (comp(next)&&comp(next).venue?'<div class="venue">'+esc(comp(next).venue.fullName)+(comp(next).venue.address&&comp(next).venue.address.city?', '+esc(comp(next).venue.address.city):'')+'</div>':'')+
       '<div class="count" id="cdown"></div></div>';
-  } else { html+='<div class="msg">No upcoming Hibs match in the feed right now.</div>'; }
+  } else { html+='<div class="msg">No upcoming Jam Tarts match in the feed right now.</div>'; }
   // recent form
   var done=games.filter(function(e){return state(e)==="post";});
   var last5=done.slice(-5);
