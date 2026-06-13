@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#005c2e">
+<title>Hibs Tracker</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Archivo+Narrow:wght@600;700&family=Space+Mono:wght@400;700&display=swap');
+:root{--bg:#04321c;--bg2:#063f25;--card:#0a4d2e;--card2:#0c5a36;--line:#13693f;--white:#F2F8F4;--muted:#8fc0a4;--green:#2FBF6B;--gold:#F2C14E;--live:#FF5468;--win:#3FD27F;}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;}
+body{font-family:'Archivo',system-ui,sans-serif;background:linear-gradient(170deg,var(--bg),#021f12 65%);color:var(--white);min-height:100vh;padding:20px 14px 46px;line-height:1.45;}
+.wrap{max-width:520px;margin:0 auto;}
+#ptr{position:fixed;top:0;left:0;right:0;text-align:center;font-family:'Space Mono',monospace;font-size:11px;color:var(--green);padding:10px 0;transform:translateY(-44px);transition:transform .15s;z-index:9;background:linear-gradient(var(--bg),transparent);pointer-events:none;}
+#ptr.show{transform:translateY(0);}
+.head{text-align:center;margin-bottom:14px;}
+.head h1{font-family:'Archivo Narrow',sans-serif;font-weight:700;font-size:32px;letter-spacing:.03em;}
+.head h1 .x{color:var(--gold);}
+.head .sub{font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.08em;}
+.tabs{display:flex;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px;margin:14px 0;}
+.tab{flex:1;border:0;background:transparent;color:var(--muted);font-family:inherit;font-weight:700;font-size:12.5px;letter-spacing:.02em;padding:11px 2px;border-radius:9px;cursor:pointer;transition:all .15s;}
+.tab.active{background:var(--green);color:#06311c;}
+.statusline{display:flex;justify-content:space-between;align-items:center;font-family:'Space Mono',monospace;font-size:10.5px;color:var(--muted);margin-bottom:10px;}
+.statusline button{border:0;background:var(--bg2);color:var(--muted);border:1px solid var(--line);font-family:inherit;font-size:10.5px;border-radius:6px;padding:4px 10px;cursor:pointer;}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;}
+.compbadge{display:inline-block;font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;background:var(--bg2);border:1px solid var(--line);color:var(--muted);border-radius:6px;padding:3px 8px;margin-bottom:6px;}
+.next-h{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;}
+.datehdr{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:16px 2px 8px;}
+.match{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 12px;margin-bottom:8px;cursor:pointer;}
+.match:active{background:var(--bg2);}
+.match.live{border-color:var(--live);}
+.match.hibs{border-color:var(--green);}
+.team{flex:1;display:flex;align-items:center;gap:7px;min-width:0;}
+.team.right{flex-direction:row-reverse;text-align:right;}
+.team img{width:24px;height:24px;object-fit:contain;flex-shrink:0;}
+.team .tn{font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.team.is .tn{color:var(--green);font-weight:800;}
+.mid{text-align:center;min-width:78px;flex-shrink:0;}
+.mid .score{font-family:'Space Mono',monospace;font-weight:700;font-size:18px;}
+.mid .when{font-size:11.5px;color:var(--muted);font-weight:600;}
+.mid .st{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.05em;color:var(--muted);margin-top:2px;}
+.mid .st.live{color:var(--live);animation:pulse 1.4s infinite;}
+.mid .st.ft{color:var(--win);}
+@keyframes pulse{50%{opacity:.45;}}
+.venue{font-size:10.5px;color:var(--muted);text-align:center;margin-top:4px;margin-bottom:8px;}
+.count{display:flex;justify-content:center;gap:10px;margin:12px 0 4px;}
+.count .cu{text-align:center;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:8px 0;width:64px;}
+.count .cv{font-family:'Space Mono',monospace;font-weight:700;font-size:22px;}
+.count .cl{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+.resbadge{font-family:'Space Mono',monospace;font-weight:700;font-size:12px;padding:2px 7px;border-radius:5px;margin-left:6px;}
+.resbadge.w{background:var(--win);color:#063018;}
+.resbadge.d{background:var(--gold);color:#3a2c00;}
+.resbadge.l{background:var(--live);color:#3a0008;}
+.formrow{display:flex;gap:5px;justify-content:center;margin:10px 0 2px;}
+.fp{width:24px;height:24px;border-radius:6px;font-family:'Space Mono',monospace;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;}
+.fp.w{background:var(--win);color:#063018;}.fp.d{background:var(--gold);color:#3a2c00;}.fp.l{background:var(--live);color:#fff;}
+.chiprow{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
+.chip{border:1px solid var(--line);background:var(--bg2);color:var(--muted);font-family:inherit;font-weight:600;font-size:12px;border-radius:18px;padding:6px 13px;cursor:pointer;}
+.chip.active{background:var(--white);color:var(--bg);border-color:var(--white);}
+table{width:100%;border-collapse:collapse;}
+th{font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.08em;color:var(--muted);text-align:center;padding:5px 2px;font-weight:400;}
+th:first-child{text-align:left;}
+td{padding:7px 2px;text-align:center;border-top:1px solid var(--line);font-family:'Space Mono',monospace;font-size:12px;}
+td.t{text-align:left;font-family:'Archivo',sans-serif;font-weight:600;font-size:12px;display:flex;align-items:center;gap:6px;}
+td.t img{width:18px;height:18px;}
+td .rk{color:var(--muted);min-width:16px;display:inline-block;}
+tr.is td{color:var(--green);font-weight:700;}
+td.pts{font-weight:700;color:var(--white);}
+.msg{text-align:center;color:var(--muted);padding:36px 12px;font-size:14px;}
+.msg u{cursor:pointer;}
+.diag{font-family:'Space Mono',monospace;font-size:10.5px;color:var(--muted);background:var(--bg2);border-radius:8px;padding:8px 10px;margin-top:8px;text-align:left;word-break:break-all;display:none;}
+.spinner{width:36px;height:36px;border:4px solid var(--line);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;margin:50px auto;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.backbtn{border:1px solid var(--line);background:var(--bg2);color:var(--white);font-family:inherit;font-weight:700;font-size:13px;border-radius:9px;padding:9px 16px;cursor:pointer;margin-bottom:12px;}
+.dethead{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:4px;}
+.dteam{flex:1;text-align:center;}.dteam img{width:46px;height:46px;object-fit:contain;}.dteam .dn{font-weight:700;font-size:13px;margin-top:4px;}
+.dscore{font-family:'Space Mono',monospace;font-weight:700;font-size:30px;min-width:90px;text-align:center;}
+.detstatus{text-align:center;font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:4px;}
+.detstatus.live{color:var(--live);}
+.keyev{display:flex;gap:8px;align-items:baseline;font-size:12.5px;padding:5px 0;border-top:1px solid var(--line);}
+.keyev .kc{font-family:'Space Mono',monospace;color:var(--muted);font-size:11px;min-width:34px;}
+.grouphdr{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;}
+.lurow{display:flex;gap:8px;align-items:baseline;padding:4px 0;font-size:13px;}
+.lurow .lj{font-family:'Space Mono',monospace;color:var(--muted);font-size:11px;min-width:24px;text-align:right;}
+.lurow .lp{font-family:'Space Mono',monospace;color:var(--muted);font-size:10px;margin-left:auto;}
+.formation{font-family:'Space Mono',monospace;font-size:11px;color:var(--gold);margin-left:6px;}
+.subshdr{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:8px 0 2px;}
+.foot{text-align:center;font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);margin-top:22px;}
+</style>
+</head>
+<body>
+<div id="ptr">↓ pull to refresh</div>
+<div class="wrap">
+  <div class="head">
+    <h1>💚 HIBS <span class="x">TRACKER</span></h1>
+    <div class="sub">HIBERNIAN FC · EVERY GAME · LIVE</div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" data-v="next">Next</button>
+    <button class="tab" data-v="fixtures">Fixtures</button>
+    <button class="tab" data-v="results">Results</button>
+    <button class="tab" data-v="table">Table</button>
+  </div>
+  <div class="statusline"><span id="updated">loading…</span><button id="refreshBtn">↻ Refresh</button></div>
+  <div id="content"><div class="spinner"></div></div>
+  <div class="foot">tap any match for details &amp; lineups · times in your timezone · data: ESPN public feed · v1</div>
+</div>
+
+<script>
+"use strict";
+var HIBS = "258";
+var SEASON_FROM = "20250701", SEASON_TO = "20260701";
+// Competitions to gather Hibs games from. Europe slot is here, ready to switch on.
+var COMPS = [
+  { slug:"sco.1",        label:"Premiership", table:true  },
+  { slug:"sco.tennents", label:"Scottish Cup", table:false },
+  { slug:"sco.cis",      label:"League Cup",   table:false }
+  // , { slug:"uefa.europa", label:"Europa League", table:false }   // ← un-comment when Hibs qualify
+];
+var TABLE_COMP = "sco.1";
+function sbUrl(slug){ return "https://site.api.espn.com/apis/site/v2/sports/soccer/"+slug+"/scoreboard?limit=400&dates="+SEASON_FROM+"-"+SEASON_TO; }
+function summaryUrl(slug,id){ return "https://site.api.espn.com/apis/site/v2/sports/soccer/"+slug+"/summary?event="+id; }
+var ST = "https://site.api.espn.com/apis/v2/sports/soccer/"+TABLE_COMP+"/standings";
+
+var view="next", filter="all", detailId=null;
+var games=[], table=null, errors=[], summaryCache={}, countdownTimer=null;
+
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?"":s).replace(/</g,"&lt;"); }
+function getJson(u){
+  return fetch(u).then(function(r){ if(!r.ok){ errors.push(u.split("/")[6]+" HTTP "+r.status); throw 0; } return r.json(); })
+    .catch(function(e){ if(e!==0) errors.push("feed → "+((e&&e.message)||"failed")); throw e; });
+}
+
+/* ---------- load: gather Hibs games from every competition ---------- */
+function load(manual){
+  errors=[];
+  if(manual) $("updated").textContent="updating…";
+  Promise.all(COMPS.map(function(cmp){
+    return getJson(sbUrl(cmp.slug)).then(function(d){
+      return (d.events||[]).filter(hasHibs).map(function(ev){ ev._comp=cmp; return ev; });
+    }).catch(function(){ return []; });
+  })).then(function(lists){
+    var all=[]; lists.forEach(function(l){ all=all.concat(l); });
+    // de-dup by id, sort by date
+    var seen={}; games=all.filter(function(ev){ if(seen[ev.id]) return false; seen[ev.id]=1; return true; })
+      .sort(function(a,b){ return new Date(a.date)-new Date(b.date); });
+    if(games.length){
+      try{ localStorage.setItem("hibs-cache", JSON.stringify({t:Date.now(),games:games})); }catch(e){}
+      $("updated").textContent="updated "+new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
+      render();
+    } else { throw 0; }
+  }).catch(function(){
+    try{ var c=JSON.parse(localStorage.getItem("hibs-cache")); if(c&&c.games){ games=c.games; $("updated").textContent="offline — cached"; render(); return; } }catch(e){}
+    $("updated").textContent="couldn't load";
+    $("content").innerHTML='<div class="msg">Couldn\'t reach the feed. <u id="diagT">Details</u> · <u id="retryT">Retry</u><div class="diag" id="diagB"></div></div>';
+    $("retryT").onclick=function(){ $("content").innerHTML='<div class="spinner"></div>'; load(true); };
+    $("diagT").onclick=function(){ var b=$("diagB"); b.innerHTML=errors.map(function(x){return "• "+esc(x);}).join("<br>")||"no detail"; b.style.display=b.style.display==="block"?"none":"block"; };
+  });
+}
+
+/* ---------- helpers ---------- */
+function comp(ev){ return ev.competitions && ev.competitions[0]; }
+function state(ev){ var c=comp(ev); return c&&c.status&&c.status.type?c.status.type.state:"pre"; }
+function isHibs(t){ return t && (String(t.id)===HIBS || t.displayName==="Hibernian"); }
+function hasHibs(ev){ var c=comp(ev); return c && (c.competitors||[]).some(function(x){ return isHibs(x.team); }); }
+function dayKey(d){ return new Date(d).toLocaleDateString([], {weekday:"short", day:"numeric", month:"short"}); }
+function timeStr(d){ return new Date(d).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}); }
+function hibsResult(ev){
+  var c=comp(ev); if(!c||state(ev)!=="post") return null;
+  var us=(c.competitors||[]).find(function(x){return isHibs(x.team);});
+  var them=(c.competitors||[]).find(function(x){return !isHibs(x.team);});
+  if(!us||!them) return null;
+  var a=parseInt(us.score,10), b=parseInt(them.score,10);
+  if(isNaN(a)||isNaN(b)) return null;
+  return a>b?"w":a<b?"l":"d";
+}
+
+function matchRow(ev){
+  var c=comp(ev); if(!c) return "";
+  var comps=c.competitors||[];
+  var home=comps.find(function(x){return x.homeAway==="home";})||comps[0]||{};
+  var away=comps.find(function(x){return x.homeAway==="away";})||comps[1]||{};
+  var st=state(ev), stType=(c.status&&c.status.type)||{};
+  var res=hibsResult(ev);
+  var mid;
+  if(st==="pre"){ mid='<div class="when">'+timeStr(ev.date)+'</div><div class="st"></div>'; }
+  else if(st==="in"){ mid='<div class="score">'+esc(home.score)+' – '+esc(away.score)+'</div><div class="st live">● '+esc(c.status.displayClock||"LIVE")+'</div>'; }
+  else { mid='<div class="score">'+esc(home.score)+' – '+esc(away.score)+'</div><div class="st ft">'+esc(stType.shortDetail||"FT")+'</div>'; }
+  function side(t,right){ var team=t.team||{};
+    return '<div class="team'+(right?' right':'')+(isHibs(team)?' is':'')+'">'+(team.logo?'<img src="'+team.logo+'" alt="">':'')+'<span class="tn">'+esc(team.shortDisplayName||team.displayName||"TBD")+'</span></div>';
+  }
+  var label=ev._comp?ev._comp.label:"";
+  var resb=res?'<span class="resbadge '+res+'">'+res.toUpperCase()+'</span>':'';
+  return '<div><span class="compbadge">'+esc(label)+'</span>'+resb+
+    '<div class="match'+(st==="in"?" live":"")+(hasHibs(ev)?" hibs":"")+'" data-eid="'+esc(ev.id)+'" data-slug="'+esc(ev._comp?ev._comp.slug:TABLE_COMP)+'">'+
+    side(home)+'<div class="mid">'+mid+'</div>'+side(away,true)+'</div></div>';
+}
+function wireRows(){ document.querySelectorAll("[data-eid]").forEach(function(el){ el.onclick=function(){ openDetail(el.dataset.eid, el.dataset.slug); }; }); }
+
+/* ---------- views ---------- */
+function render(){
+  if(detailId) return renderDetail();
+  if(view==="next") renderNext();
+  else if(view==="fixtures") renderList("pre");
+  else if(view==="results") renderList("post");
+  else renderTable();
+}
+
+function renderNext(){
+  var next=games.find(function(ev){ return state(ev)!=="post"; });
+  var html="";
+  if(next){
+    html+='<div class="card"><div class="next-h">'+(state(next)==="in"?"Live now":"Next match")+'</div>'+matchRow(next)+
+      (comp(next)&&comp(next).venue?'<div class="venue">'+esc(comp(next).venue.fullName)+(comp(next).venue.address&&comp(next).venue.address.city?', '+esc(comp(next).venue.address.city):'')+'</div>':'')+
+      '<div class="count" id="cdown"></div></div>';
+  } else { html+='<div class="msg">No upcoming Hibs match in the feed right now.</div>'; }
+  // recent form
+  var done=games.filter(function(e){return state(e)==="post";});
+  var last5=done.slice(-5);
+  if(last5.length){
+    html+='<div class="card"><div class="next-h">Recent form</div><div class="formrow">'+last5.map(function(e){var r=hibsResult(e)||"d";return '<div class="fp '+r+'">'+r.toUpperCase()+'</div>';}).join("")+'</div></div>';
+    html+='<div class="datehdr">Last results</div>'+last5.slice().reverse().map(matchRow).join("");
+  }
+  $("content").innerHTML=html; wireRows();
+  if(countdownTimer) clearInterval(countdownTimer);
+  if(next && state(next)==="pre" && $("cdown")){
+    var target=new Date(next.date).getTime();
+    var tick=function(){ var ms=target-Date.now();
+      if(ms<=0){ clearInterval(countdownTimer); load(false); return; }
+      var d=Math.floor(ms/86400000),h=Math.floor(ms%86400000/3600000),m=Math.floor(ms%3600000/60000),s=Math.floor(ms%60000/1000);
+      if($("cdown")) $("cdown").innerHTML=[[d,"days"],[h,"hrs"],[m,"min"],[s,"sec"]].map(function(u){return '<div class="cu"><div class="cv">'+u[0]+'</div><div class="cl">'+u[1]+'</div></div>';}).join("");
+    };
+    tick(); countdownTimer=setInterval(tick,1000);
+  }
+}
+
+function renderList(kind){
+  var comps=[["all","All"]].concat(COMPS.map(function(c){return [c.slug,c.label];}));
+  var list=games.filter(function(e){ return kind==="pre"? state(e)!=="post" : state(e)==="post"; });
+  if(filter!=="all") list=list.filter(function(e){ return e._comp && e._comp.slug===filter; });
+  if(kind==="post") list=list.slice().reverse();
+  var html='<div class="chiprow">'+comps.map(function(c){ return '<button class="chip'+(filter===c[0]?" active":"")+'" data-f="'+c[0]+'">'+esc(c[1])+'</button>'; }).join("")+'</div>';
+  if(!list.length){ html+='<div class="msg">Nothing here yet for this filter.</div>'; }
+  else {
+    var byDay={}; var order=[];
+    list.forEach(function(e){ var k=dayKey(e.date); if(!byDay[k]){byDay[k]=[];order.push(k);} byDay[k].push(e); });
+    order.forEach(function(k){ html+='<div class="datehdr">'+esc(k)+'</div>'+byDay[k].map(matchRow).join(""); });
+  }
+  $("content").innerHTML=html;
+  document.querySelectorAll("[data-f]").forEach(function(b){ b.onclick=function(){ filter=b.dataset.f; render(); }; });
+  wireRows();
+}
+
+function statVal(en,n){ var s=(en.stats||[]).find(function(x){return x.name===n;}); return s?(s.displayValue!==undefined?s.displayValue:s.value):"–"; }
+function renderTable(){
+  if(!table){
+    $("content").innerHTML='<div class="spinner"></div>';
+    getJson(ST).then(function(d){ table=(d.children&&d.children[0]&&d.children[0].standings&&d.children[0].standings.entries)|| (d.standings&&d.standings.entries) || []; renderTable(); })
+      .catch(function(){ $("content").innerHTML='<div class="msg">Couldn\'t load the league table — pull to refresh.</div>'; });
+    return;
+  }
+  var html='<div class="card"><div class="grouphdr">Scottish Premiership</div><table><tr><th>#</th><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr>';
+  table.forEach(function(en,i){
+    var t=en.team||{}; var logo=t.logo||((t.logos&&t.logos[0])?t.logos[0].href:"");
+    var rk=(en.note&&en.note.rank)||statVal(en,"rank")||(i+1);
+    html+='<tr'+(isHibs(t)?' class="is"':'')+'><td>'+esc(rk)+'</td><td class="t">'+(logo?'<img src="'+logo+'" alt="">':'')+esc(t.shortDisplayName||t.displayName)+'</td>'+
+      '<td>'+statVal(en,"gamesPlayed")+'</td><td>'+statVal(en,"wins")+'</td><td>'+statVal(en,"ties")+'</td><td>'+statVal(en,"losses")+'</td>'+
+      '<td>'+statVal(en,"pointDifferential")+'</td><td class="pts">'+statVal(en,"points")+'</td></tr>';
+  });
+  html+='</table></div>';
+  $("content").innerHTML=html;
+}
+
+/* ---------- detail & lineups ---------- */
+function openDetail(eid,slug){ detailId=eid; detailSlug=slug||TABLE_COMP; renderDetail(); }
+var detailSlug=TABLE_COMP;
+function closeDetail(){ detailId=null; render(); }
+function renderDetail(){
+  var ev=games.find(function(e){ return String(e.id)===String(detailId); });
+  var cached=summaryCache[detailId]; var stale=ev&&state(ev)==="in";
+  if(cached&&!stale){ paintDetail(ev,cached); return; }
+  $("content").innerHTML='<button class="backbtn" id="backBtn">← Back</button><div class="spinner"></div>'; $("backBtn").onclick=closeDetail;
+  getJson(summaryUrl(detailSlug,detailId)).then(function(d){ summaryCache[detailId]=d; if(detailId) paintDetail(ev,d); })
+    .catch(function(){ if(!detailId)return; $("content").innerHTML='<button class="backbtn" id="backBtn">← Back</button>'+(ev?matchRow(ev):'')+'<div class="msg">Couldn\'t load match details.</div>'; $("backBtn").onclick=closeDetail; wireRows(); });
+}
+function detTeam(team){ team=team||{}; return '<div class="dteam">'+(team.logo?'<img src="'+team.logo+'" alt="">':'')+'<div class="dn"'+(isHibs(team)?' style="color:var(--green)"':'')+'>'+esc(team.shortDisplayName||team.displayName||"TBD")+'</div></div>'; }
+function luRow(p){ var a=p.athlete||{}; var pos=(p.position&&(p.position.abbreviation||p.position.name))||(a.position&&a.position.abbreviation)||""; return '<div class="lurow"><span class="lj">'+esc(p.jersey||"")+'</span><span>'+esc(a.displayName||"")+'</span><span class="lp">'+esc(pos)+'</span></div>'; }
+function paintDetail(ev,d){
+  var html='<button class="backbtn" id="backBtn">← Back</button>'; var c=ev?comp(ev):null;
+  if(c){ var comps=c.competitors||[]; var home=comps.find(function(x){return x.homeAway==="home";})||comps[0]||{}; var away=comps.find(function(x){return x.homeAway==="away";})||comps[1]||{};
+    var st=state(ev),stType=(c.status&&c.status.type)||{}; var mid=st==="pre"?timeStr(ev.date):esc(home.score)+' – '+esc(away.score);
+    html+='<div class="card"><span class="compbadge">'+esc(ev._comp?ev._comp.label:"")+'</span><div class="dethead">'+detTeam(home.team)+'<div class="dscore">'+mid+'</div>'+detTeam(away.team)+'</div>'+
+      '<div class="detstatus'+(st==="in"?" live":"")+'">'+(st==="in"?"● "+esc(c.status.displayClock||"LIVE"):esc(stType.detail||stType.shortDetail||""))+'</div>'+
+      (c.venue?'<div class="venue">'+esc(c.venue.fullName)+(c.venue.address&&c.venue.address.city?', '+esc(c.venue.address.city):'')+'</div>':'')+'</div>';
+  }
+  var kes=(d.keyEvents||[]).filter(function(k){ var t=(k.type&&k.type.text||"").toLowerCase(); return t.indexOf("goal")>=0||t.indexOf("card")>=0||t.indexOf("penalty")>=0; });
+  if(kes.length){ html+='<div class="card"><div class="grouphdr">Key moments</div>'+kes.map(function(k){ var t=(k.type&&k.type.text||""); var icon=/red/i.test(t)?"🟥":/yellow/i.test(t)?"🟨":"⚽"; var who=(k.participants&&k.participants[0]&&k.participants[0].athlete&&k.participants[0].athlete.displayName)||""; return '<div class="keyev"><span class="kc">'+esc(k.clock&&k.clock.displayValue||"")+'</span><span>'+icon+' '+esc(who||t)+'</span></div>'; }).join("")+'</div>'; }
+  var rosters=d.rosters||[]; var any=false;
+  rosters.forEach(function(r){ var players=r.roster||[]; if(!players.length) return; any=true;
+    var starters=players.filter(function(p){return p.starter;}), subs=players.filter(function(p){return !p.starter;});
+    var tname=(r.team&&(r.team.shortDisplayName||r.team.displayName))||(r.homeAway==="home"?"Home":"Away");
+    html+='<div class="card"><div class="grouphdr">'+esc(tname)+(r.formation?'<span class="formation">'+esc(r.formation)+'</span>':'')+'</div>';
+    if(starters.length){ html+=starters.map(luRow).join(""); if(subs.length) html+='<div class="subshdr">Substitutes</div>'+subs.map(luRow).join(""); }
+    else html+=players.map(luRow).join("");
+    html+='</div>';
+  });
+  if(!any){ html+='<div class="card"><div class="grouphdr">Lineups</div><div class="msg" style="padding:14px">Not announced yet — team sheets usually land about an hour before kick-off.</div></div>'; }
+  $("content").innerHTML=html; $("backBtn").onclick=closeDetail;
+}
+
+/* ---------- tabs, refresh, pull ---------- */
+document.querySelectorAll("[data-v]").forEach(function(b){ b.onclick=function(){ view=b.dataset.v; detailId=null; filter="all"; document.querySelectorAll("[data-v]").forEach(function(x){x.classList.toggle("active",x===b);}); if(view==="table") table=null; render(); }; });
+$("refreshBtn").onclick=function(){ table=null; summaryCache={}; load(true); };
+(function(){
+  var startY=0,pulling=false,busy=false,THRESH=65,ptr=$("ptr");
+  function atTop(){ var s=document.scrollingElement||document.documentElement; return (s.scrollTop||0)<=1; }
+  document.addEventListener("touchstart",function(e){ if(atTop()&&e.touches.length===1){startY=e.touches[0].clientY;pulling=true;}else pulling=false; },{passive:true});
+  document.addEventListener("touchmove",function(e){ if(!pulling||busy)return; var dy=e.touches[0].clientY-startY; if(dy>25&&atTop()){ptr.classList.add("show");ptr.textContent=dy>THRESH?"↻ release to refresh":"↓ pull to refresh";}else ptr.classList.remove("show"); },{passive:true});
+  document.addEventListener("touchend",function(e){ if(!pulling||busy)return; pulling=false; var dy=(e.changedTouches[0]?e.changedTouches[0].clientY:startY)-startY; if(dy>THRESH){ busy=true; ptr.textContent="↻ refreshing…"; ptr.classList.add("show"); table=null; summaryCache={}; load(true); setTimeout(function(){ptr.classList.remove("show");busy=false;},1200);} else ptr.classList.remove("show"); },{passive:true});
+})();
+setInterval(function(){ if(document.visibilityState==="visible") load(false); }, 60000);
+load(true);
+</script>
+</body>
+</html>
